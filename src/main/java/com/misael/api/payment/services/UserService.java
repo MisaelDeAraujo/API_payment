@@ -19,9 +19,12 @@ public class UserService {
 				userRepository.existsByEmail(dto.email())) {
 			throw new RuntimeException();
 		}
-		
-		
-		return null;
+		User user = User.builder().completeName(dto.completeName())
+				.password(dto.password())
+				.email(dto.email())
+				.cpf(dto.cpf())
+				.build();
+		return userRepository.save(user);
 	}
 	
 	
