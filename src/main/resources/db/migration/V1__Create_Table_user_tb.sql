@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS user_tb(
+	id SERIAL PRIMARY KEY,
+	complete_name VARCHAR(50) NOT NULL,
+	password VARCHAR(60) NOT NULL,
+	email VARCHAR(60) UNIQUE NOT NULL,
+	cpf VARCHAR(11) UNIQUE,
+	cnpj VARCHAR(14) UNIQUE,
+	wallet FLOAT,
+	user_type VARCHAR(10)
+)
