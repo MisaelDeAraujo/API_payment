@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  postgres:
+  postgres-for-api-payment:
     image: postgres:latest
     container_name: postgres-container
     environment:
@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"
 
-  payment:
+  api-payment:
     build:
       context: .
       dockerfile: Dockerfile

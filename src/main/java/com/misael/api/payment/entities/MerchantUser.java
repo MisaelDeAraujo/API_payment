@@ -4,8 +4,6 @@ import com.misael.api.payment.entities.enums.UserType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,7 +19,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name = "user_tb")
-public class User {
+public class MerchantUser {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
@@ -31,8 +29,6 @@ public class User {
 	private String password;
 	@Column(length = 60, unique = true)
 	private String email;
-	@Column(length = 11, unique = true)
-	private String cpf;
 	@Column(length = 14, unique = true)
 	private String cnpj;
 	@Column
