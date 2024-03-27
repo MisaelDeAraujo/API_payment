@@ -1,18 +1,16 @@
 package com.misael.api.payment.handlers;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.misael.api.payment.exceptions.TransactionAuthorizationException;
 import com.misael.api.payment.exceptions.UserExistsException;
 import com.misael.api.payment.exceptions.UserNotFoundException;
 import com.misael.api.payment.exceptions.UserTypeWithoutPermissionException;
@@ -21,17 +19,11 @@ import com.misael.api.payment.exceptions.UserTypeWithoutPermissionException;
 public class GlobalExceptionHandler {
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<Map<String, List<String>>> validatorException(MethodArgumentNotValidException ex){
-		List<String> errors = ex.getBindingResult().getFieldErrors()
-				.stream().map(FieldError::getDefaultMessage).collect(Collectors.toList());
-		return new ResponseEntity<Map<String, List<String>>>(getErrorsMap(errors),new HttpHeaders(), HttpStatus.BAD_REQUEST);
-	}	
-	
-	private Map<String, List<String>> getErrorsMap(List<String> errors){
-		Map<String, List<String>> errorResponse = new HashMap<>();
-		errorResponse.put("errors", errors);
-		return errorResponse;
-		
+	public ProblemDetail methodArgumentoNotValid(MethodArgumentNotValidException ex) {
+		List<String> fieldError = ex.getBindingResult().getFieldErrors()
+				.stream().map(FieldError::getDefaultMessage).toList();
+		String errorMessage = fieldError.toString();
+		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, errorMessage);
 	}
 	
 	@ExceptionHandler(UserNotFoundException.class)
@@ -48,4 +40,10 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<Object> userExists(){
 		return ResponseEntity.internalServerError().body("User Exists");
 	}
+	
+	@ExceptionHandler(TransactionAuthorizationException.class)
+	public ResponseEntity<Object> transactionException(){
+		return ResponseEntity.internalServerError().body("Transaction Not Authorized");
+	}
+	
 }
