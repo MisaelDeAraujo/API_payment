@@ -10,7 +10,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.misael.api.payment.entities.Transaction;
 import com.misael.api.payment.entities.User;
-import com.misael.api.payment.entities.dtos.UserTransactionResponseDto;
 import com.misael.api.payment.exceptions.UnauthorizedTransactionException;
 import com.misael.api.payment.repositories.TransactionRepository;
 @Service
@@ -25,7 +24,7 @@ public class TransactionService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public UserTransactionResponseDto carryOutTransaction(double value, int payerId, int payeeId){
+    public String carryOutTransaction(double value, int payerId, int payeeId){
         Optional<User> findPayer = commonUserService.findById(payerId);
         Optional<User> findPayee = commonUserService.findById(payeeId);
         if(userTransactionAuthorizationService.validateUserTypeTransaction(value, payerId, payeeId)){
@@ -46,22 +45,16 @@ public class TransactionService {
                     .localDateTime(LocalDateTime.now())
                     .build();
             
-            ResponseEntity<Boolean> validateUserTypeTransaction = restTemplate
-            		.getForEntity("http://localhost:8081/", Boolean.class);
+            ResponseEntity<String> externalApiAuthorizer = restTemplate
+            		.getForEntity("https://run.mocky.io/v3/5794d450-d2e2-4412-8131-73d0293ac1cc", String.class);
             
-            if(validateUserTypeTransaction.getBody() == true) {
+            if(externalApiAuthorizer.getBody() != null ) {
             	transactionRepository.save(transaction);
-            	boolean result = true;
-            	UserTransactionResponseDto dto = UserTransactionResponseDto.builder()
-            			.transactionMade(result)
-            			.build();
-            	return dto;
+            ResponseEntity<String> sms = restTemplate
+            		.getForEntity("https://run.mocky.io/v3/54dc2cf1-3add-45b5-b5a9-6bf7e7f1f4a6", String.class);
+            	return sms.getBody();
             }else {
-            	boolean result = false;
-            	UserTransactionResponseDto dto = UserTransactionResponseDto.builder()
-            			.transactionMade(result)
-            			.build();
-            	return dto;
+            	return "Transação não autorizada";
             }
             
         }else{
