@@ -3,7 +3,7 @@ version: '3'
 services:
   postgres-for-api-payment:
     image: postgres:latest
-    container_name: postgres-container
+    container_name: postgres-container-payment
     environment:
       POSTGRES_DB: paymentdb
       POSTGRES_USER: postgres
