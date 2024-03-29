@@ -1,15 +1,7 @@
 package com.misael.api.payment.entities;
 
 import com.misael.api.payment.entities.enums.UserType;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,21 +14,21 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "user_tb")
 public class User {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
-	@Column(length = 50)
-	private String completeName;
-	@Column(length = 60)
-	private String password;
-	@Column(length = 60, unique = true)
-	private String email;
-	@Column(length = 11, unique = true)
-	private String cpf;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Column(length = 50)
+    private String completeName;
+    @Column(length = 60)
+    private String password;
+    @Column(length = 60, unique = true)
+    private String email;
+    @Column(length = 11, unique = true)
+    private String cpf;
 	@Column(length = 14, unique = true)
 	private String cnpj;
-	@Column
-	private Double wallet;
-	@Column
-	private UserType userType;
+    @Column
+    private Double wallet;
+    @Column
+    private UserType userType;
 }

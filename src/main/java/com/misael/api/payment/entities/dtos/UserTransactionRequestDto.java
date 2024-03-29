@@ -1,6 +1,6 @@
 package com.misael.api.payment.entities.dtos;
 
-public record UserTransactionDto(
+public record UserTransactionRequestDto(
 
 		Double value,
 		

@@ -1,18 +1,17 @@
 package com.misael.api.payment.services;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.misael.api.payment.entities.User;
-import com.misael.api.payment.entities.dtos.CommonUserDto;
-import com.misael.api.payment.entities.dtos.ShopkeeperUserDto;
-import com.misael.api.payment.entities.dtos.UserTransactionDto;
+import com.misael.api.payment.entities.dtos.UserRequestDto;
+import com.misael.api.payment.entities.dtos.UserResponseDto;
 import com.misael.api.payment.entities.enums.UserType;
 import com.misael.api.payment.exceptions.UserExistsException;
-import com.misael.api.payment.exceptions.UserNotFoundException;
-import com.misael.api.payment.exceptions.UserTypeWithoutPermissionException;
 import com.misael.api.payment.repositories.UserRepository;
 
 import lombok.AllArgsConstructor;
@@ -25,76 +24,92 @@ public class UserService {
 	private UserRepository userRepository;
 	
 	
-	public Object findAll() {
-		return userRepository.findAll();
-	}
-
-	public Object registerNewCommonUser(CommonUserDto commonUserDto) {
-		if(userRepository.existsByCpf(commonUserDto.cpf()) ||
-				userRepository.existsByEmail(commonUserDto.email())) {
-			throw new UserExistsException();
-		}
-		var user = User.builder()
-				.completeName(commonUserDto.completeName())
-				.password(commonUserDto.password())
-				.email(commonUserDto.email())
-				.cpf(commonUserDto.cpf())
-				.wallet(commonUserDto.wallet())			
-				.userType(UserType.COMMON)
-				.build();
+	public List<UserResponseDto> findAll() {
 		
-		return userRepository.save(user);
-	}
-	
-	public Object registerNewShopkeeperUser(ShopkeeperUserDto shopkeeperUserDto) {
-		if(userRepository.existsByCpf(shopkeeperUserDto.cnpj()) ||
-				userRepository.existsByEmail(shopkeeperUserDto.email())) {
-			throw new UserExistsException();
-		}
-		var user = User.builder()
-				.completeName(shopkeeperUserDto.completeName())
-				.password(shopkeeperUserDto.password())
-				.email(shopkeeperUserDto.email())
-				.cnpj(shopkeeperUserDto.cnpj())
-				.wallet(shopkeeperUserDto.wallet())			
-				.userType(UserType.SHOPKEEPER)
-				.build();
-		
-		return userRepository.save(user);
-	}
-	
-	public void carryOutTransaction(UserTransactionDto dto) {
-		Optional<User> payerId = userRepository.findById(dto.payer());
-		Optional<User> payeeId = userRepository.findById(dto.payee());
-		
-		if(payerId.isPresent() && payeeId.isPresent()) {
-			var payer = payerId.get();
-			
-			if(payer.getUserType() == UserType.COMMON && payer.getWallet() >= dto.value()) {
-				var payee = payeeId.get();
+		List<User> findAllUsers = userRepository.findAll();
+		List<UserResponseDto> responseAllUser = new ArrayList<>();
+		for (User user : findAllUsers) {
+			if(user.getUserType() == UserType.COMMON) {
+				UserResponseDto dto = UserResponseDto.builder()
+						.completeName(user.getCompleteName())
+						.email(user.getEmail())
+						.wallet(user.getWallet())
+						.type(UserType.COMMON)
+						.build();
+				responseAllUser.add(dto);
+			}
+			else if( user.getUserType() == UserType.MERCHANT) {
+				UserResponseDto dto = UserResponseDto.builder()
+						.completeName(user.getCompleteName())
+						.email(user.getEmail())
+						.wallet(user.getWallet())
+						.type(UserType.MERCHANT)
+						.build();
 				
-				Double subtraction = payer.getWallet();
-				subtraction -= dto.value();
-				payer.setWallet(subtraction);
-				
-				Double addition = payee.getWallet();
-				addition +=  dto.value();
-				payee.setWallet(addition);
-				
-				userRepository.save(payer);
-				userRepository.save(payee);
-
-			}else if(payer.getUserType() == UserType.SHOPKEEPER) {
-				throw new UserTypeWithoutPermissionException(); 
+				responseAllUser.add(dto);
+			}
+			else {
+				throw new RuntimeException();
 			}
 			
-		}else {
-			throw new UserNotFoundException();
-			
+		
 		}
 		
+		return responseAllUser;
 	}
-	
+
+	public UserResponseDto saveNewUser(UserRequestDto dto) {
+		if(userRepository.existsByCpf(dto.document()) ||
+				userRepository.existsByEmail(dto.email()) ||
+				userRepository.existsByCnpj(dto.document())) { //cnpj
+			throw new UserExistsException();
+		}
+		
+		if(dto.document().length() == 14) {
+			User merchantUser = User.builder()
+					.completeName(dto.completeName())
+					.password(dto.password())
+					.email(dto.email())
+					.cnpj(dto.document())
+					.wallet(dto.wallet())
+					.userType(UserType.MERCHANT)
+					.build();
+			userRepository.save(merchantUser);
+			UserResponseDto responseDto = UserResponseDto.builder()
+					.completeName(dto.completeName())
+					.email(dto.email())
+					.wallet(dto.wallet())
+					.type(UserType.MERCHANT)
+					.build();
+			return responseDto;
+		}
+		if(dto.document().length() == 11) {
+			User commonUser = User.builder()
+					.completeName(dto.completeName())
+					.password(dto.password())
+					.email(dto.email())
+					.cpf(dto.document())
+					.wallet(dto.wallet())
+					.userType(UserType.COMMON)
+					.build();
+			userRepository.save(commonUser);
+			UserResponseDto responseDto = UserResponseDto.builder()
+					.completeName(dto.completeName())
+					.email(dto.email())
+					.wallet(dto.wallet())
+					.type(UserType.COMMON)
+					.build();
+			
+			return responseDto;
+		}
+		
+		throw new RuntimeException();
+		
+	}
+
+	public Optional<User> findById(Integer id){
+		return userRepository.findById(id);
+	}
 	
 	
 	
