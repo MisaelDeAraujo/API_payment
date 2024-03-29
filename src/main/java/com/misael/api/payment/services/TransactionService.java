@@ -8,9 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.misael.api.payment.entities.CommonUser;
 import com.misael.api.payment.entities.Transaction;
-import com.misael.api.payment.exceptions.TransactionAuthorizationException;
+import com.misael.api.payment.entities.User;
+import com.misael.api.payment.entities.dtos.UserTransactionResponseDto;
+import com.misael.api.payment.exceptions.UnauthorizedTransactionException;
 import com.misael.api.payment.repositories.TransactionRepository;
 @Service
 public class TransactionService {
@@ -18,18 +19,18 @@ public class TransactionService {
     @Autowired
     private TransactionRepository transactionRepository;
     @Autowired
-    private UserTransactionAuthorizationService userTransactionAuthorizationService;
+    private UserTypeValidationService userTransactionAuthorizationService;
     @Autowired
-    private CommonUserService commonUserService;
+    private UserService commonUserService;
     @Autowired
     private RestTemplate restTemplate;
 
-    public Object carryOutTransaction(double value, int payerId, int payeeId){
-        Optional<CommonUser> findPayer = commonUserService.findById(payerId);
-        Optional<CommonUser> findPayee = commonUserService.findById(payeeId);
-        if(userTransactionAuthorizationService.authorization(value, payerId, payeeId)){
-            CommonUser payer = findPayer.get();
-            CommonUser payee = findPayee.get();
+    public UserTransactionResponseDto carryOutTransaction(double value, int payerId, int payeeId){
+        Optional<User> findPayer = commonUserService.findById(payerId);
+        Optional<User> findPayee = commonUserService.findById(payeeId);
+        if(userTransactionAuthorizationService.validateUserTypeTransaction(value, payerId, payeeId)){
+            User payer = findPayer.get();
+            User payee = findPayee.get();
 
             Double subtraction = payer.getWallet();
             subtraction -= value;
@@ -45,16 +46,26 @@ public class TransactionService {
                     .localDateTime(LocalDateTime.now())
                     .build();
             
-            ResponseEntity<String> response = restTemplate
-            		.getForEntity("https://run.mocky.io/v3/5794d450-d2e2-4412-8131-73d0293ac1cc", String.class);
-            String external =  response.getBody();
-            transactionRepository.save(transaction);
-            return external; 
+            ResponseEntity<Boolean> validateUserTypeTransaction = restTemplate
+            		.getForEntity("http://localhost:8081/", Boolean.class);
             
-            
+            if(validateUserTypeTransaction.getBody() == true) {
+            	transactionRepository.save(transaction);
+            	boolean result = true;
+            	UserTransactionResponseDto dto = UserTransactionResponseDto.builder()
+            			.transactionMade(result)
+            			.build();
+            	return dto;
+            }else {
+            	boolean result = false;
+            	UserTransactionResponseDto dto = UserTransactionResponseDto.builder()
+            			.transactionMade(result)
+            			.build();
+            	return dto;
+            }
             
         }else{
-            throw new TransactionAuthorizationException();
+            throw new UnauthorizedTransactionException();
         }
     }
 

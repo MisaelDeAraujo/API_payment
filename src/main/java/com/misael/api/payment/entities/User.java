@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "common_user")
-public class CommonUser {
+@Table(name = "user_tb")
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -25,6 +25,8 @@ public class CommonUser {
     private String email;
     @Column(length = 11, unique = true)
     private String cpf;
+	@Column(length = 14, unique = true)
+	private String cnpj;
     @Column
     private Double wallet;
     @Column

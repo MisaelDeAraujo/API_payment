@@ -20,15 +20,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "transaciton_tb")
+@Table(name = "transaction_tb")
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @ManyToOne
-    private CommonUser payer;
+    private User payer;
     @ManyToOne
-    private CommonUser payee;
+    private User payee;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime localDateTime;
 }

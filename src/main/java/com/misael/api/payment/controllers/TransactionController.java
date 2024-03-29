@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.misael.api.payment.entities.Transaction;
-import com.misael.api.payment.entities.dtos.UserTransactionDto;
+import com.misael.api.payment.entities.dtos.UserTransactionRequestDto;
+import com.misael.api.payment.entities.dtos.UserTransactionResponseDto;
 import com.misael.api.payment.services.TransactionService;
 
 @RestController
@@ -20,9 +20,9 @@ public class TransactionController {
 	private TransactionService transactionService;
 	
 	@PostMapping
-	public ResponseEntity<Transaction> transaction(@RequestBody UserTransactionDto dto){
-		Transaction transaction =  (Transaction) transactionService.carryOutTransaction(dto.value(),dto.payer(), dto.payee());
-		return ResponseEntity.status(HttpStatus.OK).body(transaction);
+	public ResponseEntity<UserTransactionResponseDto> transaction(@RequestBody UserTransactionRequestDto dto){
+		UserTransactionResponseDto tp = transactionService.carryOutTransaction(dto.value(),dto.payer(), dto.payee());
+		return ResponseEntity.status(HttpStatus.OK).body(tp);
 	}
 	
 	

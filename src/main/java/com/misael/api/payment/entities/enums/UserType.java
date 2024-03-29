@@ -8,7 +8,7 @@ import lombok.Getter;
 public enum UserType {
 
 	COMMON("COMMON"),
-	SHOPKEEPER("SHOPKEEPER");
+	MERCHANT("MERCHANT");
 	
 	private final String userType;
 

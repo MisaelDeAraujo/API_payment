@@ -10,7 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.misael.api.payment.exceptions.TransactionAuthorizationException;
+import com.misael.api.payment.exceptions.UnauthorizedTransactionException;
 import com.misael.api.payment.exceptions.UserExistsException;
 import com.misael.api.payment.exceptions.UserNotFoundException;
 import com.misael.api.payment.exceptions.UserTypeWithoutPermissionException;
@@ -19,9 +19,9 @@ import com.misael.api.payment.exceptions.UserTypeWithoutPermissionException;
 public class GlobalExceptionHandler {
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ProblemDetail methodArgumentoNotValid(MethodArgumentNotValidException ex) {
-		List<String> fieldError = ex.getBindingResult().getFieldErrors()
-				.stream().map(FieldError::getDefaultMessage).toList();
+	public ProblemDetail methodArgumentoNotValid(MethodArgumentNotValidException ex){
+		List<String> fieldError = ex.getBindingResult().getFieldErrors().stream()
+				.map(FieldError::getDefaultMessage).toList();
 		String errorMessage = fieldError.toString();
 		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, errorMessage);
 	}
@@ -41,8 +41,8 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.internalServerError().body("User Exists");
 	}
 	
-	@ExceptionHandler(TransactionAuthorizationException.class)
-	public ResponseEntity<Object> transactionException(){
+	@ExceptionHandler(UnauthorizedTransactionException.class)
+	public ResponseEntity<Object> unauthorizedTransaction(){
 		return ResponseEntity.internalServerError().body("Transaction Not Authorized");
 	}
 	
