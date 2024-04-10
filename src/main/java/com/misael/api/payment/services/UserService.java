@@ -17,7 +17,6 @@ import com.misael.api.payment.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 
 @Service
-@AllArgsConstructor
 public class UserService {
 
 	@Autowired
